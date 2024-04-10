@@ -14,7 +14,7 @@ contract Raffle is VRFConsumerBaseV2 {
     error Raffle__NotEnoughEthSent();
     error Raffle__TransferFail();
     error Raffle__RaffleNotOpen();
-    error Raffle__UpKeepNotNeeded(
+    error Raffle__UpkeepNotNeeded(
         uint256 currentBalance,
         uint256 numPlayers,
         RaffleState raffleState
@@ -43,6 +43,7 @@ contract Raffle is VRFConsumerBaseV2 {
     /** EVENTS */
     event EnteredRaffle(address indexed player);
     event PickedWinner(address indexed winner);
+    event RequestedRaffleWinner(uint256 indexed requestId);
 
     constructor(
         uint256 entranceFee,
@@ -84,32 +85,32 @@ contract Raffle is VRFConsumerBaseV2 {
     function checkUpKeep(
         bytes memory /* checkData */
     ) public view returns (bool upkeepNeeded, bytes memory /* performData */) {
-        bool timeHasPassed = ((block.timestamp - s_lastTimeStamp) >=
-            i_interval);
+        bool timeHasPassed = (block.timestamp - s_lastTimeStamp) >= i_interval;
         bool isOpen = RaffleState.OPEN == s_raffleState;
         bool hasBalance = address(this).balance > 0;
-        bool hasplayers = s_players.length > 0;
-        upkeepNeeded = (timeHasPassed && isOpen && hasBalance && hasplayers);
+        bool hasPlayers = s_players.length > 0;
+        upkeepNeeded = (timeHasPassed && isOpen && hasBalance && hasPlayers);
         return (upkeepNeeded, "0x0");
     }
 
     function performUpkeep(bytes calldata /* performData */) external {
         (bool upkeepNeeded, ) = checkUpKeep("");
         if (!upkeepNeeded) {
-            revert Raffle__UpKeepNotNeeded(
+            revert Raffle__UpkeepNotNeeded(
                 address(this).balance,
                 s_players.length,
                 RaffleState(s_raffleState)
             );
         }
         s_raffleState = RaffleState.CALCULATING;
-        i_vrfCoordinator.requestRandomWords(
+        uint256 requestId = i_vrfCoordinator.requestRandomWords(
             i_gasLane,
             s_subscriptionId,
             REQUEST_CONFIRMATION,
             i_callbackGasLimit,
             NUMB_WORDS
         );
+        emit RequestedRaffleWinner(requestId);
     }
 
     function fulfillRandomWords(
@@ -144,5 +145,17 @@ contract Raffle is VRFConsumerBaseV2 {
 
     function getPlayer(uint256 indexOfPlayer) external view returns (address) {
         return s_players[indexOfPlayer];
+    }
+
+    function getRecentWinner() external view returns (address) {
+        return s_recentWinner;
+    }
+
+    function getLengthOfPlayers() external view returns (uint256) {
+        return s_players.length;
+    }
+
+    function getLastTimeStamp() external view returns (uint256) {
+        return s_lastTimeStamp;
     }
 }
