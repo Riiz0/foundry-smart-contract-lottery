@@ -26,16 +26,10 @@ This code is to create a proveably random smart contract lottery.
 ## Quickstart
 
 ```
-git clone https://github.com/Cyfrin/foundry-smart-contract-lottery-f23
+git clone https://github.com/Riiz0/foundry-smart-contract-lottery.git
 cd foundry-smart-contract-lottery-f23
 forge build
 ```
-
-### Optional Gitpod
-
-If you can't or don't want to run and install locally, you can work with this repo in Gitpod. If you do this, you can skip the `clone this repo` part.
-
-[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#github.com/Cyfrin/foundry-smart-contract-lottery-f23)
 
 # Usage
 
